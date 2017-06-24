@@ -1,7 +1,6 @@
 package limit
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"net/http/httptest"
@@ -17,6 +16,7 @@ func TestParam(t *testing.T) {
 }
 
 func TestLimit(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.Use(Limit(1))
 	router.GET("/", func(*gin.Context) {
@@ -30,6 +30,7 @@ func TestLimit(t *testing.T) {
 
 func TestHandlerPanic(t *testing.T) {
 	assert.Panics(t, func() {
+		gin.SetMode(gin.TestMode)
 		router := gin.New()
 		router.Use(Limit(1))
 		router.GET("/err", func(*gin.Context) {
@@ -47,6 +48,7 @@ func TestFulled(t *testing.T) {
 	var failed int
 	var wg sync.WaitGroup
 
+	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.Use(Limit(max))
 	router.GET("/", func(*gin.Context) {
@@ -66,22 +68,7 @@ func TestFulled(t *testing.T) {
 	wg.Wait()
 
 	// We expect some Gets to fail
-	assert.True(t, failed > attempts/2)
-}
-
-func qqqq(max int) *gin.Engine {
-	router := gin.New()
-
-	router.Use(Limit(max))
-	router.GET("/", func(*gin.Context) {
-		time.Sleep(500 * time.Microsecond)
-		fmt.Println("get")
-	})
-	router.GET("/err", func(*gin.Context) {
-		//time.Sleep(500 * time.Microsecond)
-		panic("foo err")
-	})
-	return router
+	assert.True(t, failed > 0)
 }
 
 func performRequest(method, target string, router *gin.Engine) *httptest.ResponseRecorder {
