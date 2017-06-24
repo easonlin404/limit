@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-//Limit is gin middle to limit current requests
+//Limit function is gin middleware to limit current requests
 func Limit(max int) gin.HandlerFunc {
 	if max <= 0 {
 		log.Panic("max must be more than 0")
